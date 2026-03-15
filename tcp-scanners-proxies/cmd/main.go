@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"net"
 )
 
 // step #1
@@ -83,9 +83,44 @@ import (
 // to receive work, and the WaitGroup will be used to track when a single work
 // item has been completed.
 
-func worker(ports chan int, wg *sync.WaitGroup) {
+// func worker(ports chan int, wg *sync.WaitGroup) {
+// 	for p := range ports {
+// 		fmt.Println(p)
+// 		wg.Done()
+// 	}
+// }
+
+// // Buffered channels are ideal for maintaining and tracking work for multiple producers and consumers.
+// func main() {
+// 	ports := make(chan int, 100)
+// 	var wg sync.WaitGroup
+
+// 	for i := 1; i < cap(ports); i++ {
+// 		go worker(ports, &wg)
+// 	}
+
+// 	for i := 1; i <= 1024; i++ {
+// 		wg.Add(1)
+// 		ports <- 1
+// 	}
+
+// 	wg.Wait()
+// 	close(ports)
+// }
+
+// step #5
+// Multichannel Communication
+
+func worker(ports, result chan int) {
 	for p := range ports {
-		fmt.Println(p)
-		wg.Done()
+		address := fmt.Sprintf("scanme.nmap.org:%d", p)
+		conn, err := net.Dial("tcp", address)
+
+		if err != nil {
+			result <- 0
+			continue
+		}
+		conn.Close()
+		result <- p
 	}
 }
