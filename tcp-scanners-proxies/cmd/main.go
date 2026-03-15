@@ -7,11 +7,16 @@ import (
 
 // a basic port scanner
 func main() {
-	_, err := net.Dial("tcp", "scanme.nmap.org:80")
+	for i := 1; i <= 1024; i++ {
+		address := fmt.Sprintf("scanme.nmap.org:%d", i)
 
-	if err == nil {
-		fmt.Println("Connection successful")
-	} else {
-		fmt.Println("Connection failed")
+		conn, err := net.Dial("tcp", address)
+
+		if err != nil {
+			// port is closed or filtered
+			continue
+		}
+		conn.Close()
+		fmt.Printf("%d open:\n", i)
 	}
 }
