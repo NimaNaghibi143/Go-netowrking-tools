@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io"
+	"bufio"
 	"log"
 	"net"
 )
@@ -79,35 +79,60 @@ import (
 
 // echo is a handler function that simply echoes received data.
 
-func ech(conn net.Conn) {
+// ********this is the first version of the echo server.**********
+// func ech(conn net.Conn) {
+// 	defer conn.Close()
+
+// 	// Create a buffer to store received data.
+// 	b := make([]byte, 512)
+
+// 	for {
+// 		// Receive data via conn.Read into a buffer.
+// 		size, err := conn.Read(b[0:])
+
+// 		if err == io.EOF {
+// 			log.Println("Some shit went wrong in client side! probably the connection shit!")
+// 			break
+// 		}
+
+// 		if err != nil {
+// 			log.Println("Some unexpected shit just went wrong!")
+// 			break
+// 		}
+
+// 		log.Printf("Recieved %d bytes: %s\n", size, string(b))
+
+// 		// Send data via conn.Write.
+// 		log.Println("Writing data")
+
+// 		if _, err := conn.Write(b[0:size]); err != nil {
+// 			log.Fatalln("Unable to write data!")
+// 		}
+// 	}
+// }
+
+func echo(conn net.Conn) {
 	defer conn.Close()
 
-	// Create a buffer to store received data.
-	b := make([]byte, 512)
+	reader := bufio.NewReader(conn)
 
-	for {
-		// Receive data via conn.Read into a buffer.
-		size, err := conn.Read(b[0:])
+	log.Println("Reading data:")
+	s, err := reader.ReadString('\n')
 
-		if err == io.EOF {
-			log.Println("Some shit went wrong in client side! probably the connection shit!")
-			break
-		}
-
-		if err != nil {
-			log.Println("Some unexpected shit just went wrong!")
-			break
-		}
-
-		log.Printf("Recieved %d bytes: %s\n", size, string(b))
-
-		// Send data via conn.Write.
-		log.Println("Writing data")
-
-		if _, err := conn.Write(b[0:size]); err != nil {
-			log.Fatalln("Unable to write data!")
-		}
+	if err != nil {
+		log.Println("Unable to read data!")
 	}
+
+	log.Printf("Read %d bytes: %s", len(s), s)
+
+	log.Println("Writing data:")
+
+	writer := bufio.NewWriter(conn)
+
+	if _, err := writer.WriteString(s); err != nil {
+		log.Fatalln("Unable to write data")
+	}
+	writer.Flush()
 }
 
 func main() {
@@ -130,7 +155,9 @@ func main() {
 		}
 
 		// Handle the connection. Using goroutine for concurrency.
-		go ech(conn)
+		go echo(conn)
 
 	}
 }
+
+// Proxying a TCP Client
