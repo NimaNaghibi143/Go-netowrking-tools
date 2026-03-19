@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"io"
 	"log"
 	"net"
 )
@@ -111,53 +111,100 @@ import (
 // 	}
 // }
 
-func echo(conn net.Conn) {
-	defer conn.Close()
+// Enhanced version of the echo function
+// func echo(conn net.Conn) {
+// 	defer conn.Close()
 
-	reader := bufio.NewReader(conn)
+// 	reader := bufio.NewReader(conn)
 
-	log.Println("Reading data:")
-	s, err := reader.ReadString('\n')
+// 	log.Println("Reading data:")
+// 	s, err := reader.ReadString('\n')
+
+// 	if err != nil {
+// 		log.Println("Unable to read data!")
+// 	}
+
+// 	log.Printf("Read %d bytes: %s", len(s), s)
+
+// 	log.Println("Writing data:")
+
+// 	writer := bufio.NewWriter(conn)
+
+// 	if _, err := writer.WriteString(s); err != nil {
+// 		log.Fatalln("Unable to write data")
+// 	}
+// 	writer.Flush()
+// }
+
+// func main() {
+// 	// Bind to TCP port 20080 on all interfaces.
+// 	listener, err := net.Listen("tcp", ":20080")
+
+// 	if err != nil {
+// 		log.Fatalln("Unable to bind to port!")
+// 	}
+
+// 	log.Println("Listening on 0.0.0.0:20080")
+
+// 	for {
+// 		// Wait for connection. Create net.Conn on connection established.
+// 		conn, err := listener.Accept()
+// 		log.Println("Received connection")
+
+// 		if err != nil {
+// 			log.Fatalln("Unable to accept connection")
+// 		}
+
+// 		// Handle the connection. Using goroutine for concurrency.
+// 		go echo(conn)
+
+// 	}
+// }
+
+// Proxying a TCP Client
+
+// what we are trying to achieve now is:
+// a simple port forwarder to proxy a connection through an intermediary service or host.
+
+func handler(src net.Conn) {
+	defer src.Close()
+	dst, err := net.Dial("tcp", "joescatcam.website:80")
 
 	if err != nil {
-		log.Println("Unable to read data!")
+		log.Println("Unable to connect to our unreachable host!")
 	}
 
-	log.Printf("Read %d bytes: %s", len(s), s)
+	defer dst.Close()
 
-	log.Println("Writing data:")
+	// Run in goroutine to prevent io.Copy from blocking
+	go func() {
+		// Copy our source's output to the destination
+		if _, err := io.Copy(dst, src); err != nil {
+			log.Println(err)
+		}
+	}()
 
-	writer := bufio.NewWriter(conn)
-
-	if _, err := writer.WriteString(s); err != nil {
-		log.Fatalln("Unable to write data")
+	// Copy our destination's output back to our source
+	if _, err := io.Copy(src, dst); err != nil {
+		log.Println(err)
 	}
-	writer.Flush()
 }
 
 func main() {
-	// Bind to TCP port 20080 on all interfaces.
-	listener, err := net.Listen("tcp", ":20080")
+	// Listen on local port 80
+	listener, err := net.Listen("tcp", ":8080")
 
 	if err != nil {
-		log.Fatalln("Unable to bind to port!")
+		log.Fatalln("Unable to bind to port")
 	}
-
-	log.Println("Listening on 0.0.0.0:20080")
 
 	for {
-		// Wait for connection. Create net.Conn on connection established.
 		conn, err := listener.Accept()
-		log.Println("Received connection")
-
 		if err != nil {
-			log.Fatalln("Unable to accept connection")
+			log.Println("Unable to accept connection!")
+			continue
 		}
 
-		// Handle the connection. Using goroutine for concurrency.
-		go echo(conn)
-
+		go handler(conn)
 	}
 }
-
-// Proxying a TCP Client
