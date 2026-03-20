@@ -1,5 +1,11 @@
 package main
 
+import (
+	"bufio"
+	"io"
+	"net"
+)
+
 // Building a TCP Proxy
 // First let's start with a echo server
 // how the interfaces defined in go:
@@ -209,3 +215,39 @@ package main
 // client that connects, perhaps via Telnet, would be able to execute arbitrary
 // bash commands—hence the reason this is referred to as a gaping security hole.
 // Netcat allows you to optionally include this feature during program compilation.
+
+// Flusher wraps bufio.Writer, explicitly flushing on all writes.
+
+type Flusher struct {
+	w *bufio.Writer
+}
+
+// // NewFlusher creates a new Flusher from an io.Writer.
+
+func NewFlusher(w io.Writer) *Flusher {
+	return &Flusher{
+		w: bufio.NewWriter(w),
+	}
+}
+
+// Write writes bytes and explicitly flushes buffer.
+
+func (foo *Flusher) Write(b []byte) (int, error) {
+	count, err := foo.Write(b)
+
+	if err != nil {
+		return -1, err
+	}
+
+	if err := foo.w.Flush(); err != nil {
+		return -1, err
+	}
+
+	return count, err
+}
+
+func handler(conn net.Conn) {
+	// Explicitly calling /bin/sh and using -i for interactive mode
+	// so that we can use it for stdin and stdout.
+	// For Windows use exec.Command("cmd.exe").
+}
