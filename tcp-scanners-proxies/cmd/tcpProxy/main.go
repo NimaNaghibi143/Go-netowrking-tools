@@ -1,11 +1,5 @@
 package main
 
-import (
-	"io"
-	"log"
-	"net"
-)
-
 // Building a TCP Proxy
 // First let's start with a echo server
 // how the interfaces defined in go:
@@ -166,45 +160,52 @@ import (
 // what we are trying to achieve now is:
 // a simple port forwarder to proxy a connection through an intermediary service or host.
 
-func handler(src net.Conn) {
-	defer src.Close()
-	dst, err := net.Dial("tcp", "joescatcam.website:80")
+// func handler(src net.Conn) {
+// 	defer src.Close()
+// 	dst, err := net.Dial("tcp", "joescatcam.website:80")
 
-	if err != nil {
-		log.Println("Unable to connect to our unreachable host!")
-	}
+// 	if err != nil {
+// 		log.Println("Unable to connect to our unreachable host!")
+// 	}
 
-	defer dst.Close()
+// 	defer dst.Close()
 
-	// Run in goroutine to prevent io.Copy from blocking
-	go func() {
-		// Copy our source's output to the destination
-		if _, err := io.Copy(dst, src); err != nil {
-			log.Println(err)
-		}
-	}()
+// 	// Run in goroutine to prevent io.Copy from blocking
+// 	go func() {
+// 		// Copy our source's output to the destination
+// 		if _, err := io.Copy(dst, src); err != nil {
+// 			log.Println(err)
+// 		}
+// 	}()
 
-	// Copy our destination's output back to our source
-	if _, err := io.Copy(src, dst); err != nil {
-		log.Println(err)
-	}
-}
+// 	// Copy our destination's output back to our source
+// 	if _, err := io.Copy(src, dst); err != nil {
+// 		log.Println(err)
+// 	}
+// }
 
-func main() {
-	// Listen on local port 80
-	listener, err := net.Listen("tcp", ":8080")
+// func main() {
+// 	// Listen on local port 80
+// 	listener, err := net.Listen("tcp", ":8080")
 
-	if err != nil {
-		log.Fatalln("Unable to bind to port")
-	}
+// 	if err != nil {
+// 		log.Fatalln("Unable to bind to port")
+// 	}
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Println("Unable to accept connection!")
-			continue
-		}
+// 	for {
+// 		conn, err := listener.Accept()
+// 		if err != nil {
+// 			log.Println("Unable to accept connection!")
+// 			continue
+// 		}
 
-		go handler(conn)
-	}
-}
+// 		go handler(conn)
+// 	}
+// }
+
+// Replicating Netcat for Command Execution
+// $ nc –lp 13337 –e /bin/bash
+// This command creates a listening server on port 13337. Any remote
+// client that connects, perhaps via Telnet, would be able to execute arbitrary
+// bash commands—hence the reason this is referred to as a gaping security hole.
+// Netcat allows you to optionally include this feature during program compilation.
