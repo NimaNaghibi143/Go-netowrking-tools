@@ -268,3 +268,9 @@ func handler(conn net.Conn) {
 	conn.Close()
 
 }
+
+// TODO
+// Establish a connection to a remote listener via net.Dial(network, address string).
+// Initialize a Cmd via exec.Command(name string, arg ...string).
+// Redirect Stdin and Stdout properties to utilize the net.Conn object.
+// Run the command.
