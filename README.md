@@ -2,7 +2,7 @@
 
 A collection of hands-on networking projects built while working through **Black Hat Go** — chapter by chapter. Each sub-project maps to a chapter's core concepts and is implemented progressively from a naive approach to a production-quality design.
 
----
+--- 
 
 ## Projects
 
@@ -39,7 +39,23 @@ go run cmd/tcpProxy/main.go
 
 ### `HTTP-CLIENTS-REMOTE-INTERACTIONS`
 
-*(In progress — HTTP client interactions and remote API calls.)*
+Covers HTTP client fundamentals: making requests with the default client, controlling timeouts, reading response bodies, and crafting custom requests with arbitrary headers.
+
+#### HTTP API Calls — 4 progressive iterations
+
+| Step | Approach | Key Concept |
+|------|----------|-------------|
+| 1 | `http.Get` / `http.Head` / `http.Post` | Default client convenience wrappers |
+| 2 | Custom `http.Client` with timeout | Avoiding indefinite hangs on dead hosts |
+| 3 | `http.NewRequest` + `client.Do` | Manual request construction, custom headers |
+| 4 | All methods combined *(active)* | Shared client, GET / HEAD / POST / spoofed UA |
+
+**Run:**
+```bash
+cd HTTP-CLIENTS-REMOTE-INTERACTIONS
+go mod init http-clients-remote-interactions
+go run cmd/httpApiCall/main.go
+```
 
 ---
 
